@@ -6,7 +6,7 @@ output: html_document
 
 ## Name
 
-Please enter your name here.
+Nicholas Nasser
 
 ### Setup
 
@@ -16,6 +16,10 @@ Read in the data with `read_csv()` and store the data as an R object named `data
 ```{r}
 ## Load the data and any necessary packages here.
 
+library(tidyverse)
+library(ggplot2)
+
+data = read_csv("maacs.csv.gz")
 ```
 
 ## Part 1
@@ -33,8 +37,15 @@ NOTE: For this part, do not use any plots.
 ```{r}
 ## Write your function here
 
+fev1_increase_check = function(df) {
+  correlation = cor(df$age, df$fev1, use = "complete.obs")
+  return (correlation > 0)
+}
+
+fev1_increase_check(data)
 ```
 
+I chose to create a function that takes in our Mouse Allergen and Asthma data and subsequently calculates the correlation between the FEV1 and Age columns. If the correlation coefficient is positive (indicating an increase in FEV1 levels as children age), then the function returns TRUE. Otherwise, it returns FALSE. Since the output above is TRUE, we can conclude that based on the data, the statement "FEV1 values in children are higher in older children relative to younger children" is true unless proven otherwise.
 
 ## Part 2
 
@@ -45,12 +56,14 @@ How much does FEV1 change for a 1-year increase in the child's age?
 ```{r}
 ## Add your code here
 
+fev1_lm = lm(fev1 ~ age, data = data)
+coef(fev1_lm)
 ```
 
 
 Write your data analysis statement interpreting the regression model here:
 
-
+Analysis Statement: Based on the model coefficients, for every 1-year increase in a child's age, we can expect the child's FEV1 to increase by approximately 0.171.
 
 ## Part 3
 
@@ -65,17 +78,48 @@ NOTE:
 ```{r}
 ## Add your code here
 
+# Premise 1
+
+ggplot(data = data, aes(x = age, y = fev1)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue", na.rm = TRUE) +
+  labs(title = "FEV1 vs Age in Children with Asthma",
+       x = "Age (years)",
+       y = "FEV1 (liters)") +
+  theme_minimal()
+
+# Premise 2
+
+data$age_group <- cut(
+  data$age,
+  breaks = c(0, 5, 10, 15, 20),
+  labels = c("0-5", "6-10", "11-15", "16-20"),
+  right = TRUE
+)
+
+ggplot(data, aes(x = age_group, y = fev1)) +
+  geom_boxplot(fill = "lightblue", na.rm = TRUE) +
+  labs(
+    title = "Distribution of FEV1 by Age Group",
+    x = "Age Group (years)",                      
+    y = "FEV1 (liters)"                           
+  ) +
+  theme_minimal()
+
+# Premise 3
+
+summary(fev1_lm)
+
 ```
 
 
 Write the three supporting premise statements here:
 
-1. 
+1. The scatter plot with the fitted regression line displays a positive relationship between Age and FEV1 levels, indicating that FEV1 levels increase as children get older.
 
-2. 
+2. The box plot demonstrating levels of FEV1 in different age groups for children with asthma illustrate higher median FEV1 values for children who are older.
 
-3. 
-
+3. The summary of our linear model describing the relationship between Age and FEV1 displays an extremely small p-value for our slope coefficient of 0.171, showing us that the positive relationship is statistically significant.
 
 ## Part 4
 
