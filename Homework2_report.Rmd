@@ -135,31 +135,130 @@ For statements involving plots, instead of returning `TRUE` or `FALSE`, you func
 ```{r}
 ## Function for supporting premise statement 1
 
+premise1_func = function(df) {
+  
+  # Plot used in statement
+  plot_1 = ggplot(data = df, aes(x = age, y = fev1)) +
+    geom_point(na.rm = TRUE) +
+    geom_smooth(method = "lm", se = FALSE, color = "blue", na.rm = TRUE) +
+    labs(title = "FEV1 vs Age in Children with Asthma",
+         x = "Age (years)", 
+         y = "FEV1 (liters)") +
+    theme_minimal()
+  print(plot_1)
+  
+  # Hypothetical plot
+  
+  hyp_lm1 = lm(fev1 ~ age, data = df)
+  slope = coef(hyp_lm1)[2]
+  X = rnorm(150, mean = mean(df$age, na.rm = TRUE), sd = sd(df$age, na.rm = TRUE))
+  Y =  slope * X + rnorm(150, mean = mean(df$fev1, na.rm = TRUE), 
+                               sd = sd(df$fev1, na.rm = TRUE) * 0.5) - 1.5
+  sim_data = tibble(x = X, y = Y)
+  plot_2 = ggplot(data = sim_data, aes(x = x, y = y)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE, color = "blue",) +
+    labs(title = "Hypothetical FEV1 vs Age in Children with Asthma",
+       x = "Age (years)",
+       y = "FEV1 (liters)") +
+    theme_minimal()
+  print(plot_2)
+}
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 2
 
+premise2_func = function(df) {
+  
+  # Plot used in statement
+  
+  plot_1 = ggplot(data = df, aes(x = age_group, y = fev1)) +
+    geom_boxplot(fill = "lightblue", na.rm = TRUE) +
+    labs(
+      title = "Distribution of FEV1 by Age Group",
+      x = "Age Group (years)",                      
+      y = "FEV1 (liters)") +
+    theme_minimal()
+  print(plot_1)
+
+  # Hypothetical plot
+  
+  age_group = rep(c("0-5","6-10","11-15","16-20"), each = 20)
+  age_group = factor(age_group, levels = c("0-5", "6-10", "11-15", "16-20"))
+  
+  sim_data <- data.frame(
+    age_group = age_group,
+    fev1 = c(rnorm(20, 0.8, 0.2), rnorm(20, 1.5, 0.2),
+             rnorm(20, 2.0, 0.2), rnorm(20, 2.5, 0.2)))
+  
+  plot_2 = ggplot(sim_data, aes(x = age_group, y = fev1)) +
+    geom_boxplot(fill = "pink") +
+    labs(title = "Hypothetical Distribution of FEV1 by Age Group",
+         x = "Age Group (years)", y = "FEV1 (liters)") +
+    theme_minimal()
+  print(plot_2)
+}
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 3
 
+premise3_func = function(df) {
+  lm_summary = summary(fev1_lm)
+  slope = coef(lm_summary)[2]
+  p_value = coef(lm_summary)[8]
+  if (slope > 0 & p_value < 0.05) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
 ```
 
 Execute each of your function and show that the produce the expected output.
 
+```{r}
+premise1_func(data)
+premise2_func(data)
+premise3_func(data)
+```
 
-
+Each of these functions support the three supporting premises from question three, respectively. For the first two premises, I created functions that show the initial plots I created in question three using our real data and then created hypothetical plots rendered using simulated data. Both of these hypothetical plots also support the first two supporting premise statements. For the third statement, I created a function that checks the model summary of the linear model describing the relationship between FEV1 and Age, validating whether or not the slope coefficient is greater than zero and the p-value of the slope coefficient is smaller than 0.05. Both conditions were met, hence the function's output being TRUE.
 
 ## Part 5
 
-Describe one alternative to the primary statement "FEV1 values in children are higher in older children relative to younger children". 
+Describe one alternative to the primary statement "FEV1 values in children are higher in older children relative to younger children".
+
+```{r}
+age_group = rep(c("0-5","6-10","11-15","16-20"), each = 20) %>%
+  factor(., levels = c("0-5", "6-10", "11-15", "16-20"))
+  
+sim_data <- data.frame(
+  age_group = age_group,
+  fev1 = c(rnorm(20, 1.7, 0.2), rnorm(20, 1.65, 0.2),
+           rnorm(20, 1.75, 0.2), rnorm(20, 1.7, 0.2)))
+  
+ggplot(sim_data, aes(x = age_group, y = fev1)) +
+geom_boxplot(fill = "pink") +
+labs(title = "Hypothetical Distribution of FEV1 by Age Group",
+     x = "Age Group (years)", y = "FEV1 (liters)") +
+theme_minimal()
+```
+
+One alternative to the primary statement "FEV1 values in children are higher in older children relative to younger children" is that "FEV1 values do not change as children age". This is represented above with simulated code, where in a hypothetical situation we observe FEV1 levels that are relatively constant among all children with asthma in the study, regardless of age.
 
 Create a fault tree for the alternative outcome describing how the alternative outcome could be realized in the data even if the primary statement were true.
 
 Your fault tree should be created as a separate image and does not need to be created in R. Upload the image of the fault tree to Canvas.
+
+
+
+
+
+
+
 
 
